@@ -30,7 +30,7 @@ def print_symptoms(dictionary):
         disease = input('Введите название болезни: ')
 
 
-# Удаление болезней с количеством симптомов меньше чем min_number_of_symptoms из
+# Удаление болезней с количеством симптомов меньше чем min_number_of_symptoms из словаря
 def remove_diseases(min_number_of_symptoms, dictionary):
     new_array = []
     for dis in dictionary.items():
@@ -47,7 +47,28 @@ def remove_diseases(min_number_of_symptoms, dictionary):
     return another_df
 
 
-# main
+# TODO: все болезни с одинаковыми симптотами объединить в одну, разделив '; '
+def unite_diseases_with_same_symptoms(dictionary):
+    # Менять и удалять ключи в цикле по словарю нельзя, поэтому создать новый словарь и вернуть его
+    dict_sorted = dict(dictionary)
+    for sym in dict_sorted.keys():
+        dict_sorted[sym].sort()
+
+    # Выводит болезни с одинаковыми симптомами
+    for disease in dict_sorted:
+        for another_disease in dict_sorted:
+            if disease == another_disease:
+                continue
+            elif dict_sorted[disease] == dict_sorted[another_disease]:
+                print('%s = %s' % (disease, another_disease))
+                # Ошибка, если здесь изменить/удалить ключ:
+                # RuntimeError: dictionary keys changed during iteration
+
+                # Здесь что-то делать с новым словарем
+
+    # Возвращает неупорядоченный словарь с упорядоченными симптомами
+    return dict_sorted
+
 
 # Загрузка датасета
 df = pd.read_csv('new_syditriage.csv')
@@ -56,8 +77,6 @@ disease_dictionary = create_dictionary(df, sort=False)
 
 print('Количество болезней: %s' % len(disease_dictionary.keys()))
 print('Количество симптомов: %s' % df['symptom'].nunique())
-
-# print_symptoms(disease_dictionary)
 
 symptoms = df['symptom'].unique()
 diseases = df['disease'].unique()

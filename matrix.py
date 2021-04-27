@@ -23,9 +23,19 @@ print('Создание матрицы: %6f сек.' % (end - start))
 
 df = pd.DataFrame(data=sd)
 
-# Запись в файл: 69.296059 сек.
+# Запись в csv: 69.296059 сек.
 # Файл весит 450 Мб
 start = time.time()
 df.to_csv('new_sd.csv', header=False, index=False)
 end = time.time()
-print('Запись в файл: %6f сек.' % (end - start))
+print('Запись в файл csv: %6f сек.' % (end - start))
+
+
+# TODO: Добавить запись в txt файл без разделителей
+def write_txt():
+    pass
+
+
+# TODO: Добавить чтение txt файла без разделителей
+def read_txt():
+    pass

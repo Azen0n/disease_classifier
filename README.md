@@ -1,3 +1,7 @@
+<em><b>upd 2021/05/04:</b> В /new те же файлы с префиксом, но используется другой датасет: https://www.kaggle.com/walterconway/covid-flu-cold-symptoms</em>
+<br>
+<br>
+<br>
 <b>Автор датасета «syditriage.csv»:</b> Paul Larmuseau
 
 <b>Источник:</b> https://www.kaggle.com/plarmuseau/symptom-disease-dataset-2

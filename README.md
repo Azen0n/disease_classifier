@@ -1,7 +1,5 @@
-<em><b>upd 2021/05/05: </b>Старый датасет в папке /old</em>
-<br>
-<br>
-<br>
+<em>Старая версия в ветке old</em>
+
 <b>Автор датасета «COVID, FLU, COLD Symptoms»:</b> Walter Conway
 
 <b>Источник:</b> https://www.kaggle.com/walterconway/covid-flu-cold-symptoms

@@ -12,6 +12,9 @@ df = pd.read_csv('new_data/large_data.csv')
 symptoms = list(df[df.columns[:20]].columns.values)
 diseases = list(df[df.columns[20]].unique())
 
+print(symptoms[:10])
+print(symptoms[10:20])
+
 # Объект с введенными симптомами
 con = ''
 while con != 'нет':

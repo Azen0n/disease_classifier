@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn import tree
 from sklearn.model_selection import train_test_split
+from sklearn import ensemble
 import random
 import time
 import joblib
@@ -41,10 +42,10 @@ def data_target(dataframe):
 
 
 # Проверка точности модели на тестовой выборке
-def calculate_accuracy(dtree_classifier, test_data, test_target):
+def calculate_accuracy(classifier, test_data, test_target):
     correct = len(test_data)
     for i in range(len(test_data)):
-        result = dtree_classifier.predict([test_data[i]])
+        result = classifier.predict([test_data[i]])
         if result != test_target[i]:
             correct -= 1
     accuracy = correct * 100.0 / len(test_data)
@@ -87,17 +88,30 @@ if __name__ == "__main__":
                                                           max_leaf_nodes=i)
             tree_classifier = tree_classifier.fit(train_data, train_target)
             accuracy = calculate_accuracy(tree_classifier, test_data, test_target)
+            accuracy2 = calculate_accuracy(tree_classifier, train_data, train_target)
             end = time.time()
-            print('max_leaf_nodes=%s\t\tAccuracy: %.50f%%\t\tTime elapsed: %.25fs' % (i, accuracy, (end - start)))
+            print(
+                'max_leaf_nodes=%s\t\tAccuracy обуч.: %.50f%%\t\tTime elapsed: %.25fs' % (i, accuracy2, (end - start)))
+            print('max_leaf_nodes=%s\t\tAccuracy тест.: %.50f%%\t\tTime elapsed: %.25fs' % (i, accuracy, (end - start)))
+
 
     # check_max_depth_criterion()
-    check_max_leaf_nodes()
+    # check_max_leaf_nodes()
 
-    tree_classifier = tree.DecisionTreeClassifier(random_state=0, max_depth=12, criterion='entropy',
-                                                  max_leaf_nodes=28)
+    tree_classifier = tree.DecisionTreeClassifier(random_state=0, max_depth=12, criterion='entropy', max_leaf_nodes=28)
     tree_classifier = tree_classifier.fit(train_data, train_target)
 
+    random_forest_classifier = ensemble.RandomForestClassifier(random_state=0)
+    random_forest_classifier = random_forest_classifier.fit(train_data, train_target)
+
+    accuracy = calculate_accuracy(random_forest_classifier, test_data, test_target)
+    print(accuracy)
+
     # Экспорт красивого графика (https://dreampuf.github.io/GraphvizOnline)
-    tree.export_graphviz(tree_classifier, out_file='misc/new_test_tree.dot')
+    # tree.export_graphviz(tree_classifier,
+    #                      feature_names=list(df[df.columns[:20]].columns.values),
+    #                      class_names=list(df[df.columns[20]].unique()),
+    #                      out_file='misc/new_test_tree.dot')
+
     # Сохранение модели в файл для быстрой загрузки
-    joblib.dump(tree_classifier, 'new_train_tree_classifier.pkl')
+    # joblib.dump(tree_classifier, 'new_train_tree_classifier.pkl')

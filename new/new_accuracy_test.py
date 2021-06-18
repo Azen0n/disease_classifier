@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy import stats
 from sklearn import tree
 from sklearn.model_selection import train_test_split
 from sklearn import ensemble
@@ -7,9 +8,10 @@ import random
 import time
 import joblib
 
-
 # Разбиение датафрейма на обучающую и тестовую выборки
 # Работает за 370 секунд, когда функция из sklearn за 0.01
+
+
 def split_train_test(dataframe, test_size):
     train = pd.DataFrame(columns=dataframe.columns)
     test = pd.DataFrame(columns=dataframe.columns)
@@ -51,6 +53,46 @@ def calculate_accuracy(classifier, test_data, test_target):
     accuracy = correct * 100.0 / len(test_data)
 
     return accuracy
+
+
+# Проверка точности ансамбля на тестовой выборке
+def calculate_accuracy_ensemble(classifiers, classifier_labels, test_data, test_target):
+    correct = len(test_data)
+    for i in range(len(test_data)):
+        results, results_mean, result_disease = my_ensemble([test_data[i]], classifiers, classifier_labels)
+        if result_disease != test_target[i]:
+            correct -= 1
+    accuracy = correct * 100.0 / len(test_data)
+
+    return accuracy
+
+
+# Ансамбль, classifiers - обученные модели
+def my_ensemble(obj, classifiers, classifier_labels):
+    res = [[],
+           [],
+           [],
+           []]
+
+    for index, classifier in enumerate(classifiers):
+        result = classifier.predict(obj)
+        result_probability = classifier.predict_proba(obj)
+
+        res[index].append(result[0])
+        # print('%s: %s' % (classifier_labels[index], result[0]))
+        for i in range(4):
+            res[index].append(result_probability[0][i] * 100.0)
+
+    results = np.array(res)
+
+    proba_temp = results[:, 1:].astype(float)
+    result_temp = results[:, 0]
+
+    # Самая популярная метка класса и усредненные вероятности
+    results_mean = proba_temp.mean(axis=0)
+    result_disease = stats.mode(result_temp)
+
+    return results, results_mean, result_disease[0][0]
 
 
 if __name__ == "__main__":

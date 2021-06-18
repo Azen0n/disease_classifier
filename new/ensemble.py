@@ -1,9 +1,11 @@
+import time
+
 import numpy as np
 import pandas as pd
 from scipy import stats
 from sklearn.model_selection import train_test_split
 
-from new_accuracy_test import calculate_accuracy
+from new_accuracy_test import calculate_accuracy, calculate_accuracy_ensemble, my_ensemble
 from new_accuracy_test import data_target
 from new_input_symptoms import create_object
 
@@ -26,21 +28,37 @@ train, test = train_test_split(df, test_size=0.2, random_state=0)
 NUMBER_OF_CLASSIFIERS = 4
 SAMPLE_SIZE = int(len(train) / NUMBER_OF_CLASSIFIERS)
 
-duplicates = True
+duplicates = False
 if duplicates:
-    # С повторениями
+    # С повторениями: N выборок с одного и того же датасета
     train_parts = []
     for i in range(NUMBER_OF_CLASSIFIERS):
         train_parts.append(train.sample(SAMPLE_SIZE))
 else:
-    # Без повторений
+    # Без повторений: весь датасет делится на N частей
     shuffled_train = train.sample(frac=1, random_state=0)
     train_parts = np.array_split(shuffled_train, NUMBER_OF_CLASSIFIERS)
+
+
+# Модели обучаются на N - 1 из N частей, последняя часть для проверки точности
+# Что-то вроде кроссвалидации, наверное?
+# Этот некрасивый код соединяет части, полученные в прошлом пункте
+temp_array = [[], [], [], []]
+test_for_classifiers = []
+for j in range(3, -1, -1):
+    temp_df = pd.DataFrame()
+    for i in range(4):
+        if i == j:
+            # Добавляем пропущенную часть в массив с датафреймами для проверки точности
+            test_for_classifiers.append(data_target(train_parts[j]))
+            continue
+        temp_df = temp_df.append(train_parts[i])
+    temp_array[-j - 1].append(temp_df)
 
 # Разделение частей на обучающие примеры и метки класса
 classifiers_data_target = []
 for i in range(NUMBER_OF_CLASSIFIERS):
-    classifiers_data_target.append(data_target(train_parts[i]))
+    classifiers_data_target.append(data_target(temp_array[i][0]))
 
 test_data, test_target = data_target(test)
 
@@ -65,26 +83,14 @@ classifier_labels = ['Дерево решений',
 for index, classifier in enumerate(classifiers):
     classifiers[index] = classifier.fit(classifiers_data_target[index][0], classifiers_data_target[index][1])
 
+
 # Объект с введенными симптомами
 con = ''
 while con != 'n':
     print(symptoms)
     obj = create_object(out=False)
-    res = [[],
-           [],
-           [],
-           []]
 
-    for index, classifier in enumerate(classifiers):
-        result = classifier.predict(obj)
-        result_probability = classifier.predict_proba(obj)
-
-        res[index].append(result[0])
-        print('%s: %s' % (classifier_labels[index], result[0]))
-        for i in range(4):
-            res[index].append(result_probability[0][i] * 100.0)
-
-    results = np.array(res)
+    results, results_mean, result_disease = my_ensemble(obj, classifiers, classifier_labels)
 
     print("{:<25} {:<10} {:<10} {:<10} {:<10}".format('Классификатор', diseases[0], diseases[1], diseases[2],
                                                       diseases[3]))
@@ -93,21 +99,23 @@ while con != 'n':
                                                                       float(results[i][2]), float(results[i][3]),
                                                                       float(results[i][4])))
 
-    print('\nФинальное решение:')
-    proba_temp = results[:, 1:].astype(float)
-    result_temp = results[:, 0]
-
-    # Самая популярная метка класса и усредненные вероятности
-    results_mean = proba_temp.mean(axis=0)
-    result_disease = stats.mode(result_temp)
-
-    print("{:<25} {:<10.1f} {:<10.1f} {:<10.1f} {:<10.1f}".format(result_disease[0][0], results_mean[0],
+    print("{:<25} {:<10.1f} {:<10.1f} {:<10.1f} {:<10.1f}".format(result_disease, results_mean[0],
                                                                   results_mean[1], results_mean[2], results_mean[3]))
 
     con = input('Продолжить? (y/n)')
 
-# Точность
-print('Точность на тестовой выборке:')
+
+# Точность алгоритмов
+print('Точность моделей на тестовой выборке:')
 for index, classifier in enumerate(classifiers):
-    accuracy = calculate_accuracy(classifier, test_data, test_target)
-    print('%s: %.1f%%' % (classifier_labels[index], accuracy))
+    start = time.time()
+    accuracy = calculate_accuracy(classifier, test_for_classifiers[index][0], test_for_classifiers[index][1])
+    end = time.time()
+    print('%s: %.1f%% (%.2f сек.)' % (classifier_labels[index], accuracy, end - start))
+
+# Точность ансамбля (на тестовой выборке, которую оставили в самом начале)
+print('\nТочность ансамбля на тестовой выборке:')
+start = time.time()
+accuracy = calculate_accuracy_ensemble(classifiers, classifier_labels, test_data, test_target)
+end = time.time()
+print('Ансамбль алгоритмов: %.1f%% (%.2f сек.)' % (accuracy, end - start))

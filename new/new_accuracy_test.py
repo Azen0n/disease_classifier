@@ -56,10 +56,10 @@ def calculate_accuracy(classifier, test_data, test_target):
 
 
 # Проверка точности ансамбля на тестовой выборке
-def calculate_accuracy_ensemble(classifiers, classifier_labels, test_data, test_target):
+def calculate_accuracy_ensemble(classifiers, test_data, test_target):
     correct = len(test_data)
     for i in range(len(test_data)):
-        results, results_mean, result_disease = my_ensemble([test_data[i]], classifiers, classifier_labels)
+        results, results_mean, result_disease = my_ensemble([test_data[i]], classifiers)
         if result_disease != test_target[i]:
             correct -= 1
     accuracy = correct * 100.0 / len(test_data)
@@ -68,7 +68,7 @@ def calculate_accuracy_ensemble(classifiers, classifier_labels, test_data, test_
 
 
 # Ансамбль, classifiers - обученные модели
-def my_ensemble(obj, classifiers, classifier_labels):
+def my_ensemble(obj, classifiers):
     res = [[],
            [],
            [],
@@ -137,8 +137,8 @@ if __name__ == "__main__":
             print('max_leaf_nodes=%s\t\tAccuracy тест.: %.50f%%\t\tTime elapsed: %.25fs' % (i, accuracy, (end - start)))
 
 
-    # check_max_depth_criterion()
-    # check_max_leaf_nodes()
+    check_max_depth_criterion()
+    check_max_leaf_nodes()
 
     tree_classifier = tree.DecisionTreeClassifier(random_state=0, max_depth=12, criterion='entropy', max_leaf_nodes=28)
     tree_classifier = tree_classifier.fit(train_data, train_target)

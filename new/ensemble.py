@@ -3,6 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 from scipy import stats
+import joblib
 from sklearn.model_selection import train_test_split
 
 from new_accuracy_test import calculate_accuracy, calculate_accuracy_ensemble, my_ensemble
@@ -62,11 +63,17 @@ for i in range(NUMBER_OF_CLASSIFIERS):
 
 test_data, test_target = data_target(test)
 
-# Инициализация классификаторов
-random_forest_classifier = RandomForestClassifier(random_state=0, max_depth=12, criterion='entropy', max_leaf_nodes=28)
-dtree_classifier = DecisionTreeClassifier(random_state=0, max_depth=12, criterion='entropy', max_leaf_nodes=28)
-bayes_classifier = GaussianNB()
-neighbors_classifier = KNeighborsClassifier(n_neighbors=7, metric='minkowski')
+# # Инициализация классификаторов
+# random_forest_classifier = RandomForestClassifier(random_state=0, max_depth=12, criterion='entropy', max_leaf_nodes=28)
+# dtree_classifier = DecisionTreeClassifier(random_state=0, max_depth=12, criterion='entropy', max_leaf_nodes=28)
+# bayes_classifier = GaussianNB()
+# neighbors_classifier = KNeighborsClassifier(n_neighbors=7, metric='minkowski')
+
+# Загрузка моделей
+dtree_classifier = joblib.load('model1.pkl')
+random_forest_classifier = joblib.load('model2.pkl')
+bayes_classifier = joblib.load('model3.pkl')
+neighbors_classifier = joblib.load('model4.pkl')
 
 # Массив с моделями
 classifiers = [dtree_classifier,
@@ -79,9 +86,11 @@ classifier_labels = ['Дерево решений',
                      'Наивный байес',
                      'K ближайших соседей']
 
-# Обучение моделей
-for index, classifier in enumerate(classifiers):
-    classifiers[index] = classifier.fit(classifiers_data_target[index][0], classifiers_data_target[index][1])
+# # Обучение моделей
+# for index, classifier in enumerate(classifiers):
+#     classifiers[index] = classifier.fit(classifiers_data_target[index][0], classifiers_data_target[index][1])
+#     # Сохранение модели
+#     joblib.dump(classifiers[index], 'model' + str(index + 1) + '.pkl')
 
 
 # Объект с введенными симптомами
@@ -90,7 +99,7 @@ while con != 'n':
     print(symptoms)
     obj = create_object(out=False)
 
-    results, results_mean, result_disease = my_ensemble(obj, classifiers, classifier_labels)
+    results, results_mean, result_disease = my_ensemble(obj, classifiers)
 
     print("{:<25} {:<10} {:<10} {:<10} {:<10}".format('Классификатор', diseases[0], diseases[1], diseases[2],
                                                       diseases[3]))
@@ -116,6 +125,6 @@ for index, classifier in enumerate(classifiers):
 # Точность ансамбля (на тестовой выборке, которую оставили в самом начале)
 print('\nТочность ансамбля на тестовой выборке:')
 start = time.time()
-accuracy = calculate_accuracy_ensemble(classifiers, classifier_labels, test_data, test_target)
+accuracy = calculate_accuracy_ensemble(classifiers, test_data, test_target)
 end = time.time()
 print('Ансамбль алгоритмов: %.1f%% (%.2f сек.)' % (accuracy, end - start))

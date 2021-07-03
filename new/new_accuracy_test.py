@@ -150,10 +150,10 @@ if __name__ == "__main__":
     print(accuracy)
 
     # Экспорт красивого графика (https://dreampuf.github.io/GraphvizOnline)
-    # tree.export_graphviz(tree_classifier,
-    #                      feature_names=list(df[df.columns[:20]].columns.values),
-    #                      class_names=list(df[df.columns[20]].unique()),
-    #                      out_file='misc/new_test_tree.dot')
+    tree.export_graphviz(tree_classifier,
+                         feature_names=list(df[df.columns[:20]].columns.values),
+                         class_names=list(df[df.columns[20]].unique()),
+                         out_file='misc/new_test_tree.dot')
 
     # Сохранение модели в файл для быстрой загрузки
-    # joblib.dump(tree_classifier, 'new_train_tree_classifier.pkl')
+    joblib.dump(tree_classifier, 'new_train_tree_classifier.pkl')

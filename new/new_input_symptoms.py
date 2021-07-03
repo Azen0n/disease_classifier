@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-from new_train_tree import symptoms
+
+df = pd.read_csv('new_data/large_data.csv')
+# Список симптомов
+symptoms = list(df[df.columns[:20]].columns.values)
 
 
 # Флаг out для вывода симптомов созданного объекта
